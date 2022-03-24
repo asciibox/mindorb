@@ -71,6 +71,11 @@ public class MousePositionOnTerrain : MonoBehaviour
                                                 size.x = 1;
                                                 size.y = 1;
                                                 size.z = 1;
+                                            } else
+                                               if (size.x<-1) {
+                                                size.x = -1;
+                                                size.y = -1;
+                                                size.z = -1;
                                             }
                                         }
 
