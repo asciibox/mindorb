@@ -7,9 +7,17 @@ public class ArcballScript : MonoBehaviour
 {
     // Is true when the user wants to rotate the camera
     bool ballEnabled = false;
+    bool rotated = false;
  
     float rotationSpeed = 1f;
     float radius = 20f;
+
+    Vector3 worldPosition;
+    private GameObject cubePrefab = null;
+    public float sizingFactor = 0.02f;
+    private Vector3 startSize;
+    private float startX;
+    private float startY;
  
  
     // The mouse cursor's position during the last frame
@@ -61,22 +69,108 @@ public class ArcballScript : MonoBehaviour
     // Update is called once per frame
     void Update ()
     {
+        if (Input.GetMouseButtonDown(0)) {
+            cubePrefab = null;
+            bool isShiftKeyDown = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+              if (isShiftKeyDown) {
+                     Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                        RaycastHit hitData;
+                        if(Physics.Raycast(ray, out hitData, 1000))
+                            {
+                                cubePrefab = hitData.transform.gameObject;
+                                worldPosition = hitData.point;
+                                                float positionZ = 10.0f;
+                                                Vector3 position = new Vector3 (Input.mousePosition.x, Input.mousePosition.y,positionZ);
+                                                startX = position.x;
+                                                startY = position.y;
+                                                startSize = cubePrefab.transform.localScale;
+                            }
+              }
+        }
+
+      if (Input.GetMouseButtonUp(0)) {
+        cubePrefab = null;
+
+    if (rotated == false) {
+
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                        RaycastHit hitData;
+                        if(Physics.Raycast(ray, out hitData, 1000))
+                            {
+                                worldPosition = hitData.point;
+
+                                bool isShiftKeyDown = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+
+                                if (!isShiftKeyDown) {
+
+                                    GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                                    sphere.transform.position = new Vector3(worldPosition.x, worldPosition.y, worldPosition.z);
+                                    sphere.transform.parent = hitData.transform;
+                                     Vector3 size = sphere.transform.localScale;
+                                     // Make sure the new sphere is not larger than the parent sphere
+                                     Vector3 parentScale = sphere.transform.parent.transform.localScale;
+                                     if (size.x > parentScale.x) {
+                                         sphere.transform.localScale = new Vector3(parentScale.x, parentScale.y, parentScale.z);
+                                     }
+
+                                }
+
+                            } else {
+                                Debug.Log("No raycast");
+                               
+                            }
+            }
+
+      }
+
+      if ( (Input.GetMouseButton (0)) && (cubePrefab!=null) ) {
+          print("cubePrefab:"+cubePrefab);
+                                        Vector3 size = cubePrefab.transform.localScale;
+                     
+                                        size.x = startSize.x + (Input.mousePosition.x - startX + Input.mousePosition.y - startY) * sizingFactor;
+                                        size.y = startSize.y + (Input.mousePosition.x - startX+ Input.mousePosition.y - startY) * sizingFactor;
+                                        size.z = startSize.z + (Input.mousePosition.x - startX+ Input.mousePosition.y - startY) * sizingFactor;
+                                        
+                                        if (cubePrefab.transform.parent) {
+                                                if (size.x>1) {
+                                                size.x = 1;
+                                                size.y = 1;
+                                                size.z = 1;
+                                            } else
+                                               if (size.x<-1) {
+                                                size.x = -1;
+                                                size.y = -1;
+                                                size.z = -1;
+                                            }
+                                        }
+
+                                        cubePrefab.transform.localScale = size;
+
+
+      }
+
+
         // Whenever the left mouse button is pressed, the
         // mouse cursor's position is stored for the arc-
         // ball camera as a reference.
         if (Input.GetMouseButtonDown(0))
         {
             // last is a global vec3 variable
-            last = Input.mousePosition;
- 
-            // This is another global variable
-            ballEnabled = true;
+            bool isShiftKeyDown = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            if (isShiftKeyDown==false) {
+                ballEnabled = true;
+                last = Input.mousePosition;
+                rotated = false;
+            }
+            
         }
  
         // When the user releases the left mouse button,
         // all we have to do is to reset the flag.
-        if (Input.GetMouseButtonUp (0))
+        if (Input.GetMouseButtonUp (0)) {
             ballEnabled = false;
+            cubePrefab = null;
+        }
  
         if (ballEnabled)
         {
@@ -99,6 +193,8 @@ public class ArcballScript : MonoBehaviour
 
                 // Make the camera look at the target
                 transform.LookAt (pos);
+
+                rotated = true;
                
             }
  
@@ -113,7 +209,9 @@ public class ArcballScript : MonoBehaviour
             transform.Translate(0, 0, scroll * 5, Space.Self);
               transform.LookAt(pos);
               float distance = Vector3.Distance(pos, transform.position);
-            sc = new Vector3(distance, sc.y, sc.z);
+              sc = new Vector3(distance, sc.y, sc.z);
+
+
   
           
         }
