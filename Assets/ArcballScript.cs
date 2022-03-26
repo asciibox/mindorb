@@ -97,12 +97,22 @@ public class ArcballScript : MonoBehaviour
                         RaycastHit hitData;
                         if(Physics.Raycast(ray, out hitData, 1000))
                             {
+                                if (hitData.transform.tag=="Untagged") {
+                                    print("Adding Hull");
+                                    Material yourMaterial = Resources.Load("HullMaterial", typeof(Material)) as Material;
+                                    GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                                    sphere.transform.position = new Vector3(hitData.transform.position.x, hitData.transform.position.y, hitData.transform.position.z);
+                                    sphere.GetComponent<Renderer>().material = yourMaterial;
+                                    sphere.transform.localScale = new Vector3(sphere.transform.localScale.x*1.5f, sphere.transform.localScale.y*1.5f,sphere.transform.localScale.z*1.5f);
+                                    sphere.transform.tag = "Hull";
+                                } else {
+                                    print("Adding sphere");
                                 worldPosition = hitData.point;
 
                                 bool isShiftKeyDown = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
                                 if (!isShiftKeyDown) {
-
+                                    
                                     GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                                     sphere.transform.position = new Vector3(worldPosition.x, worldPosition.y, worldPosition.z);
                                     sphere.transform.parent = hitData.transform;
@@ -112,6 +122,8 @@ public class ArcballScript : MonoBehaviour
                                      if (size.x > parentScale.x) {
                                          sphere.transform.localScale = new Vector3(parentScale.x, parentScale.y, parentScale.z);
                                      }
+
+                                }
 
                                 }
 
